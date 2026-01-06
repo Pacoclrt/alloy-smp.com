@@ -1,14 +1,16 @@
-// --- 1. Système de Copie ---
+// --- FONCTION DE COPIE & OUVERTURE ---
 function copyToClipboard(text, tooltipId) {
     navigator.clipboard.writeText(text).then(() => {
         const tooltip = document.getElementById(tooltipId);
         tooltip.classList.add('active');
         
-        // Si c'est un lien (Discord/Store), on l'ouvre aussi dans un nouvel onglet après 1s
-        if (text.includes('discord') || text.includes('store')) {
+        // Ouvre le lien si c'est Discord, Store OU le Wiki (info)
+        if (text.includes('discord') || text.includes('store') || text.includes('info')) {
              setTimeout(() => {
-                 window.open('https://' + text, '_blank');
-             }, 800);
+                 // Ajoute https:// si nécessaire
+                 let url = text.startsWith('http') ? text : 'https://' + text;
+                 window.open(url, '_blank');
+             }, 500);
         }
 
         setTimeout(() => {
@@ -17,34 +19,33 @@ function copyToClipboard(text, tooltipId) {
     });
 }
 
-// --- 2. Animation 3D (Three.js) ---
+// --- MOTEUR 3D (PARTICULES DE FORGE) ---
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-const renderer = new THREE.WebGLRenderer({ alpha: true }); // Fond transparent
+const renderer = new THREE.WebGLRenderer({ alpha: true });
 
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.getElementById('canvas-container').appendChild(renderer.domElement);
 
-// Création des particules (Étincelles)
+// Création des particules
 const particlesGeometry = new THREE.BufferGeometry();
-const particlesCount = 1500; // Nombre d'étincelles
+const particlesCount = 1500;
 
-const posArray = new Float32Array(particlesCount * 3); // x, y, z
+const posArray = new Float32Array(particlesCount * 3);
 
 for(let i = 0; i < particlesCount * 3; i++) {
-    // On place les particules partout aléatoirement
-    posArray[i] = (Math.random() - 0.5) * 15; 
+    posArray[i] = (Math.random() - 0.5) * 15; // Dispersion large
 }
 
 particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
 
-// Texture de l'étincelle (Un simple point brillant)
+// Texture de l'étincelle
 const material = new THREE.PointsMaterial({
     size: 0.03,
     color: 0xff4500, // Orange Magma
     transparent: true,
     opacity: 0.8,
-    blending: THREE.AdditiveBlending // Effet lumineux
+    blending: THREE.AdditiveBlending
 });
 
 const particlesMesh = new THREE.Points(particlesGeometry, material);
@@ -61,7 +62,7 @@ document.addEventListener('mousemove', (event) => {
     mouseY = event.clientY / window.innerHeight - 0.5;
 });
 
-// Boucle d'animation
+// Animation
 const clock = new THREE.Clock();
 
 function animate() {
@@ -69,17 +70,17 @@ function animate() {
 
     const elapsedTime = clock.getElapsedTime();
 
-    // Rotation lente de la galaxie d'étincelles
+    // Mouvement de la spirale d'étincelles
     particlesMesh.rotation.y = elapsedTime * 0.05;
-    particlesMesh.rotation.x = mouseY * 0.5;
-    particlesMesh.rotation.y += mouseX * 0.5;
+    particlesMesh.rotation.x = mouseY * 0.3;
+    particlesMesh.rotation.y += mouseX * 0.3;
 
     renderer.render(scene, camera);
 }
 
 animate();
 
-// Redimensionnement propre
+// Redimensionnement
 window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
