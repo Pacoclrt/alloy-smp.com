@@ -1,95 +1,87 @@
-// --- 1. Copier l'IP ---
-function copyIP() {
-    const ip = document.getElementById("ip-text").innerText;
-    navigator.clipboard.writeText(ip).then(() => {
-        const tooltip = document.getElementById("copy-tooltip");
-        tooltip.innerText = "IP Copiée !";
-        tooltip.classList.add("active");
+// --- 1. Système de Copie ---
+function copyToClipboard(text, tooltipId) {
+    navigator.clipboard.writeText(text).then(() => {
+        const tooltip = document.getElementById(tooltipId);
+        tooltip.classList.add('active');
         
+        // Si c'est un lien (Discord/Store), on l'ouvre aussi dans un nouvel onglet après 1s
+        if (text.includes('discord') || text.includes('store')) {
+             setTimeout(() => {
+                 window.open('https://' + text, '_blank');
+             }, 800);
+        }
+
         setTimeout(() => {
-            tooltip.classList.remove("active");
-            setTimeout(() => tooltip.innerText = "Cliquez pour copier !", 300);
+            tooltip.classList.remove('active');
         }, 2000);
     });
 }
 
-// --- 2. Joueurs en ligne (API mcstatus) ---
-fetch('https://api.mcstatus.io/v2/status/java/play.alloy-smp.fr')
-    .then(response => response.json())
-    .then(data => {
-        const countElement = document.getElementById("player-count");
-        if (data.online) {
-            countElement.innerText = data.players.online;
-            document.querySelector('.dot').style.background = '#44b700'; // Vert
-        } else {
-            countElement.innerText = "Hors ligne";
-            document.querySelector('.dot').style.background = '#d32f2f'; // Rouge
-        }
-    })
-    .catch(err => {
-        console.error("Erreur API:", err);
-        document.getElementById("player-count").innerText = "-";
-    });
+// --- 2. Animation 3D (Three.js) ---
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer({ alpha: true }); // Fond transparent
 
-// --- 3. Animation de Particules (Étincelles de Forge) ---
-const canvas = document.getElementById("ember-canvas");
-const ctx = canvas.getContext("2d");
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.getElementById('canvas-container').appendChild(renderer.domElement);
 
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+// Création des particules (Étincelles)
+const particlesGeometry = new THREE.BufferGeometry();
+const particlesCount = 1500; // Nombre d'étincelles
 
-const embers = [];
+const posArray = new Float32Array(particlesCount * 3); // x, y, z
 
-class Ember {
-    constructor() {
-        this.reset();
-    }
-
-    reset() {
-        this.x = Math.random() * canvas.width;
-        this.y = canvas.height + Math.random() * 100;
-        this.size = Math.random() * 3 + 1;
-        this.speedY = Math.random() * 1 + 0.5;
-        this.color = `rgba(255, ${69 + Math.random() * 100}, 0, ${Math.random() * 0.5 + 0.2})`;
-    }
-
-    update() {
-        this.y -= this.speedY;
-        this.x += Math.sin(this.y * 0.01) * 0.5; // Effet de flottement
-        
-        if (this.size > 0.1) this.size -= 0.01;
-
-        if (this.y < 0 || this.size <= 0.1) {
-            this.reset();
-        }
-    }
-
-    draw() {
-        ctx.fillStyle = this.color;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fill();
-    }
+for(let i = 0; i < particlesCount * 3; i++) {
+    // On place les particules partout aléatoirement
+    posArray[i] = (Math.random() - 0.5) * 15; 
 }
 
-// Créer 100 étincelles
-for (let i = 0; i < 100; i++) {
-    embers.push(new Ember());
-}
+particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
 
-function animate() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    embers.forEach(ember => {
-        ember.update();
-        ember.draw();
-    });
-    requestAnimationFrame(animate);
-}
-
-// Redimensionner le canvas si la fenêtre change
-window.addEventListener('resize', () => {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+// Texture de l'étincelle (Un simple point brillant)
+const material = new THREE.PointsMaterial({
+    size: 0.03,
+    color: 0xff4500, // Orange Magma
+    transparent: true,
+    opacity: 0.8,
+    blending: THREE.AdditiveBlending // Effet lumineux
 });
 
+const particlesMesh = new THREE.Points(particlesGeometry, material);
+scene.add(particlesMesh);
+
+camera.position.z = 3;
+
+// Interaction Souris
+let mouseX = 0;
+let mouseY = 0;
+
+document.addEventListener('mousemove', (event) => {
+    mouseX = event.clientX / window.innerWidth - 0.5;
+    mouseY = event.clientY / window.innerHeight - 0.5;
+});
+
+// Boucle d'animation
+const clock = new THREE.Clock();
+
+function animate() {
+    requestAnimationFrame(animate);
+
+    const elapsedTime = clock.getElapsedTime();
+
+    // Rotation lente de la galaxie d'étincelles
+    particlesMesh.rotation.y = elapsedTime * 0.05;
+    particlesMesh.rotation.x = mouseY * 0.5;
+    particlesMesh.rotation.y += mouseX * 0.5;
+
+    renderer.render(scene, camera);
+}
+
 animate();
+
+// Redimensionnement propre
+window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+});
