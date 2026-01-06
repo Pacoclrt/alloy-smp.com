@@ -1,6 +1,7 @@
 :root {
     --primary: #ff4500; /* Magma */
-    --gold: #ffd700;
+    --gold: #ffd700;    /* Or */
+    --cyan: #00e5ff;    /* Mithril (Wiki) */
     --dark: #0a0a0a;
     --glass: rgba(20, 20, 20, 0.6);
 }
@@ -12,20 +13,18 @@ body {
     font-family: 'Rajdhani', sans-serif;
     color: white;
     height: 100vh;
-    overflow: hidden; /* Pas de scroll */
+    overflow: hidden;
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-/* Le fond 3D */
 #canvas-container {
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
     z-index: -1;
 }
 
-/* Conteneur Central (Glassmorphism) */
 .glass-container {
     text-align: center;
     background: var(--glass);
@@ -39,14 +38,12 @@ body {
     animation: float 6s ease-in-out infinite;
 }
 
-/* Animation de flottement doux */
 @keyframes float {
     0% { transform: translateY(0px); }
     50% { transform: translateY(-10px); }
     100% { transform: translateY(0px); }
 }
 
-/* Logo */
 .logo-wrapper {
     position: relative;
     width: 120px;
@@ -78,7 +75,6 @@ body {
     100% { opacity: 0.4; transform: translate(-50%, -50%) scale(1); }
 }
 
-/* Typographie */
 h1 {
     font-size: 3rem;
     letter-spacing: 5px;
@@ -94,22 +90,21 @@ h1 {
 .status {
     color: #aaa;
     letter-spacing: 2px;
-    margin-bottom: 40px;
+    margin-bottom: 30px;
     font-size: 0.9rem;
 }
 
-/* Grille des Cartes */
 .grid-links {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 12px; /* Un peu plus serré pour faire tenir les 4 cartes */
 }
 
 .card {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 10px;
-    padding: 15px 20px;
+    padding: 12px 20px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -119,7 +114,7 @@ h1 {
 }
 
 .card:hover {
-    background: rgba(255, 69, 0, 0.1); /* Teinte rouge au survol */
+    background: rgba(255, 69, 0, 0.1);
     border-color: var(--primary);
     transform: scale(1.02);
 }
@@ -132,6 +127,7 @@ h1 {
 
 .icon-box.discord { color: #5865F2; }
 .icon-box.store { color: var(--gold); }
+.icon-box.wiki { color: var(--cyan); } /* La couleur du Wiki */
 
 .text-box {
     text-align: left;
@@ -145,7 +141,6 @@ h1 {
 .copy-icon { color: #555; transition: 0.3s; }
 .card:hover .copy-icon { color: white; }
 
-/* Tooltip (Copié !) */
 .tooltip {
     position: absolute;
     right: 10px; top: -30px;
